@@ -1,7 +1,7 @@
 Package.describe({
    name: 'nblazer:casperjs',
    summary: 'CasperJS end to end test integration with velocity.',
-   version: '0.1.0',
+   version: '0.1.1',
    git: 'https://github.com/blazer82/meteor-casperjs.git',
    debugOnly: true
 });
@@ -14,7 +14,7 @@ Npm.depends({
 Package.onUse(function(api) {
    api.versionsFrom('METEOR@0.9.4');
    api.use([
-      'velocity:core',
+      'velocity:core@0.2.14',
       'coffeescript'
    ], 'server');
    api.addFiles('nblazer:casperjs.coffee');
