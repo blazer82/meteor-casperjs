@@ -1,0 +1,50 @@
+{
+  "dependencies": {
+    "glob": {
+      "version": "4.0.6",
+      "dependencies": {
+        "graceful-fs": {
+          "version": "3.0.4"
+        },
+        "inherits": {
+          "version": "2.0.1"
+        },
+        "minimatch": {
+          "version": "1.0.0",
+          "dependencies": {
+            "lru-cache": {
+              "version": "2.5.0"
+            },
+            "sigmund": {
+              "version": "1.0.0"
+            }
+          }
+        },
+        "once": {
+          "version": "1.3.1",
+          "dependencies": {
+            "wrappy": {
+              "version": "1.0.1"
+            }
+          }
+        }
+      }
+    },
+    "xml2js": {
+      "version": "0.4.4",
+      "dependencies": {
+        "sax": {
+          "version": "0.6.1"
+        },
+        "xmlbuilder": {
+          "version": "2.4.4",
+          "dependencies": {
+            "lodash-node": {
+              "version": "2.4.1"
+            }
+          }
+        }
+      }
+    }
+  }
+}
