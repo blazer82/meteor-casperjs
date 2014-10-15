@@ -14,7 +14,7 @@ Sample file:
 ```coffeescript
 casper.test.begin "Sample Test", 2, (test) ->
    casper.start "http://localhost:3000", ->
-      this.waitForSelector "body", ->
+      @waitForSelector "body", ->
          test.assert true, "True is true"
 
    casper.then ->
@@ -23,3 +23,5 @@ casper.test.begin "Sample Test", 2, (test) ->
    casper.run -> test.done()
 ```
 Integrates with [velocity:html-reporter](https://github.com/meteor-velocity/html-reporter/).
+
+Run your tests with `meteor run --test`.
