@@ -4,6 +4,9 @@
 
 ## Change log
 
+### 0.1.3
+ - Fixed issue where wrong path values would be run as tests and crash
+
 ### 0.1.2
  - Documentation updated
  - Change log added
