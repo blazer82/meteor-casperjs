@@ -1,7 +1,7 @@
 Package.describe({
    name: 'nblazer:casperjs',
    summary: 'CasperJS end to end test integration with velocity.',
-   version: '0.1.2',
+   version: '0.1.3',
    git: 'https://github.com/blazer82/meteor-casperjs.git',
    debugOnly: true
 });
