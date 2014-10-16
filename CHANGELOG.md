@@ -4,6 +4,9 @@
 
 ## Change log
 
+### 0.1.5
+ - Fixed: Made sample tests available to meteor
+
 ### 0.1.4
  - Better handling of multiple test files
  - Cleanup reports on startup and on test removal
