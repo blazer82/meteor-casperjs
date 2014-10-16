@@ -17,7 +17,8 @@ Package.onUse(function(api) {
       'velocity:core@0.2.14',
       'coffeescript'
    ], 'server');
-   api.addFiles('nblazer:casperjs.coffee');
+   api.addFiles('nblazer:casperjs.coffee', 'server');
+   api.addFiles('sample-tests/sampleTest.coffee', 'server', {isAsset: true});
 });
 
 Package.onTest(function(api) {
