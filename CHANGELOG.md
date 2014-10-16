@@ -4,6 +4,10 @@
 
 ## Change log
 
+### 0.1.4
+ - Better handling of multiple test files
+ - Cleanup reports on startup and on test removal
+
 ### 0.1.3
  - Fixed issue where wrong path values would be run as tests and crash
 
