@@ -4,6 +4,9 @@
 
 ## Change log
 
+### 0.1.6
+ - Fixed: Compatibility with the latest velocity API
+
 ### 0.1.5
  - Fixed: Made sample tests available to meteor
 
