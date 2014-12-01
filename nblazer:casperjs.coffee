@@ -1,90 +1,92 @@
 TEST_FRAMEWORK_NAME = "casperjs"
 
-if process.env.NODE_ENV is "development"
-	if Velocity and Velocity.registerTestingFramework
-		Velocity.registerTestingFramework TEST_FRAMEWORK_NAME,
-			regex: "#{TEST_FRAMEWORK_NAME}/.+\\.(js|coffee|litcoffee|coffee\\.md)$"
-			sampleTestGenerator: ->
-				[
-					{
-						path: "#{TEST_FRAMEWORK_NAME}/sampleTest.coffee"
-						contents: Assets.getText "sample-tests/sampleTest.coffee"
-					}
-				]
+return if process.env.NODE_ENV isnt "development" or process.env.IS_MIRROR
 
-	spawn = (Npm.require 'child_process').spawn
-	glob = Npm.require 'glob'
-	fs = Npm.require 'fs'
-	pathnpm = Npm.require 'path'
-	parseString = (Npm.require 'xml2js').parseString
-	Future = Npm.require 'fibers/future'
+log = (msg) -> console.log "[#{TEST_FRAMEWORK_NAME}] #{msg}"
 
-	Meteor.startup ->
-		# if process.env.IS_MIRROR
-		resetReports()
+if Velocity and Velocity.registerTestingFramework
+	Velocity.registerTestingFramework TEST_FRAMEWORK_NAME,
+		regex: "#{TEST_FRAMEWORK_NAME}/.+\\.(js|coffee|litcoffee|coffee\\.md)$"
+		sampleTestGenerator: ->
+			[
+				{
+					path: "#{TEST_FRAMEWORK_NAME}/sampleTest.coffee"
+					contents: Assets.getText "sample-tests/sampleTest.coffee"
+				}
+			]
 
-		(VelocityTestFiles.find targetFramework: TEST_FRAMEWORK_NAME).observe
-			added: runTestFile
-			changed: runTestFile
-			removed: removeReportForTestFile
+spawn = (Npm.require 'child_process').spawn
+glob = Npm.require 'glob'
+fs = Npm.require 'fs'
+pathnpm = Npm.require 'path'
+parseString = (Npm.require 'xml2js').parseString
+Future = Npm.require 'fibers/future'
 
-	resetReports = ->
-		Meteor.call 'resetReports', framework: TEST_FRAMEWORK_NAME
+Meteor.startup ->
+	resetReports()
 
-		path = "#{Velocity.getTestsPath()}/.reports/#{TEST_FRAMEWORK_NAME}"
-		files = glob.sync "**/*.xml", cwd: path
-		fs.unlink "#{path}/#{file}" for file in files
+	(VelocityTestFiles.find targetFramework: TEST_FRAMEWORK_NAME).observe
+		added: runTestFile
+		changed: runTestFile
+		removed: removeReportForTestFile
 
-	getReportFilePath = (file) ->
-		"#{Velocity.getTestsPath()}/.reports/#{TEST_FRAMEWORK_NAME}/#{pathnpm.basename(file.absolutePath)}.xml"
+resetReports = ->
+	Meteor.call 'velocity/reports/reset', framework: TEST_FRAMEWORK_NAME
 
-	runTestFile = (file) ->
-		future = new Future
+	path = "#{Velocity.getTestsPath()}/.reports/#{TEST_FRAMEWORK_NAME}"
+	files = glob.sync "**/*.xml", cwd: path
+	fs.unlink "#{path}/#{file}" for file in files
 
-		# Only run tests for .js or .coffee files
-		return unless pathnpm.extname(file.absolutePath) in [".js", ".coffee"]
+getReportFilePath = (file) ->
+	"#{Velocity.getTestsPath()}/.reports/#{TEST_FRAMEWORK_NAME}/#{pathnpm.basename(file.absolutePath)}.xml"
 
-		console.log "Run tests for file #{file.absolutePath}..."
+runTestFile = (file) ->
+	future = new Future
 
-		reportFile = getReportFilePath file
-		child = spawn 'casperjs', ['test', "--xunit=#{reportFile}", file.absolutePath]
-		# child.stdout.on 'data', (msg) -> process.stdout.write msg
-		# child.stderr.on 'data', (msg) -> process.stderr.write msg
-		child.on 'exit', (code) ->
-			process.stderr.write "Casperjs exited with code #{code}" if code > 0
-			future.return()
+	# Only run tests for .js or .coffee files
+	return unless pathnpm.extname(file.absolutePath) in [".js", ".coffee"]
 
-		future.wait()
-		# Velocity.parseXmlFiles TEST_FRAMEWORK_NAME
-		parseReport reportFile
+	log "Run tests for file #{file.absolutePath}..."
 
-	removeReportForTestFile = (file) ->
-		reportFile = getReportFilePath file
-		fs.unlink reportFile if fs.existsSync reportFile
+	reportFile = getReportFilePath file
+	child = spawn 'casperjs', ['test', "--xunit=#{reportFile}", file.absolutePath]
+	# child.stdout.on 'data', (msg) -> process.stdout.write msg
+	# child.stderr.on 'data', (msg) -> process.stderr.write msg
+	child.on 'exit', (code) ->
+		process.stderr.write "Casperjs exited with code #{code}" if code > 0
+		future.return()
 
-	parseReport = (path) ->
-		hashCode = (s) ->
-			(s.split "").reduce (a, b) ->
-				a = ((a << 5) - a) + b.charCodeAt 0
-				a & a
-			, 0
+	future.wait()
+	# Velocity.parseXmlFiles TEST_FRAMEWORK_NAME
+	parseReport reportFile
 
-		parseString (fs.readFileSync path), (err, result) ->
-			for testsuite in result.testsuites.testsuite
-				for testcase in testsuite.testcase
-					result =
-						name: testcase.$.name
-						framework: TEST_FRAMEWORK_NAME
-						result: if testcase.failure then 'failed' else 'passed'
-						timestamp: testsuite.$.timestamp
-						time: testcase.$.time
-						ancestors: [testcase.$.classname]
+removeReportForTestFile = (file) ->
+	reportFile = getReportFilePath file
+	fs.unlink reportFile if fs.existsSync reportFile
 
-					if testcase.failure
-						for failure in testcase.failure
-							result.failureType = failure.$.type
-							result.failureMessage = failure.$.message
-							result.failureStackTrace = failure._
+parseReport = (path) ->
+	hashCode = (s) ->
+		(s.split "").reduce (a, b) ->
+			a = ((a << 5) - a) + b.charCodeAt 0
+			a & a
+		, 0
 
-					result.id = "#{TEST_FRAMEWORK_NAME}:#{hashCode(pathnpm.basename(path) + testcase.$.classname + testcase.$.name)}"
-					Meteor.call 'postResult', result
+	parseString (fs.readFileSync path), (err, result) ->
+		for testsuite in result.testsuites.testsuite
+			for testcase in testsuite.testcase
+				result =
+					name: testcase.$.name
+					framework: TEST_FRAMEWORK_NAME
+					result: if testcase.failure then 'failed' else 'passed'
+					timestamp: testsuite.$.timestamp
+					time: testcase.$.time
+					ancestors: [testcase.$.classname]
+
+				if testcase.failure
+					for failure in testcase.failure
+						result.failureType = failure.$.type or ''
+						result.failureMessage = failure.$.message or ''
+						result.failureStackTrace = failure._
+
+				result.id = "#{TEST_FRAMEWORK_NAME}:#{hashCode(pathnpm.basename(path) + testcase.$.classname + testcase.$.name)}"
+				Meteor.call 'velocity/reports/submit', result
