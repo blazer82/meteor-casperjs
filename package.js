@@ -12,9 +12,10 @@ Npm.depends({
 });
 
 Package.onUse(function(api) {
-   api.versionsFrom('METEOR@0.9.4');
+   api.versionsFrom('METEOR@1.0');
    api.use([
-      'velocity:core@0.2.14',
+      'velocity:core@0.4.1',
+      'velocity:shim@0.0.3',
       'coffeescript'
    ], 'server');
    api.addFiles('nblazer:casperjs.coffee', 'server');
