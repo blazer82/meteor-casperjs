@@ -13,7 +13,7 @@ Create tests in your tests directory `tests/casperjs/[*.js|*.coffee]`
 Sample file:
 ```coffeescript
 casper.test.begin "Sample Test", 2, (test) ->
-   casper.start "http://localhost:3000", ->
+   casper.start casper.cli.get('rootUrl'), ->
       @waitForSelector "body", ->
          test.assert true, "True is true"
 
@@ -25,3 +25,5 @@ casper.test.begin "Sample Test", 2, (test) ->
 Integrates with [velocity:html-reporter](https://github.com/meteor-velocity/html-reporter/).
 
 Run your tests with `meteor run --test`.
+
+In your tests, parse the `--rootUrl=<URL>` option with `casper.cli.get('rootUrl')` to hit the [soft-mirror](https://github.com/meteor-velocity/node-soft-mirror).
