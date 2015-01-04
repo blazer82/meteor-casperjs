@@ -1,6 +1,6 @@
 TEST_FRAMEWORK_NAME = "casperjs"
 
-return if process.env.NODE_ENV isnt "development" or process.env.IS_MIRROR
+return if process.env.NODE_ENV isnt "development"
 
 log = (msg) -> console.log "[#{TEST_FRAMEWORK_NAME}] #{msg}"
 
@@ -21,14 +21,26 @@ fs = Npm.require 'fs'
 pathnpm = Npm.require 'path'
 parseString = (Npm.require 'xml2js').parseString
 Future = Npm.require 'fibers/future'
+currentMirror = null
 
 Meteor.startup ->
-	resetReports()
+  unless process.env.IS_MIRROR
+    Meteor.call 'velocity/mirrors/request', framework: TEST_FRAMEWORK_NAME
 
-	(VelocityTestFiles.find targetFramework: TEST_FRAMEWORK_NAME).observe
-		added: runTestFile
-		changed: runTestFile
-		removed: removeReportForTestFile
+    VelocityMirrors.find
+      framework: TEST_FRAMEWORK_NAME,
+      state: 'ready'
+    .observe
+      added: watch
+      changed: watch
+
+watch = (mirror) ->
+  currentMirror = mirror
+  resetReports()
+  (VelocityTestFiles.find targetFramework: TEST_FRAMEWORK_NAME).observe
+          added: runTestFile
+          changed: runTestFile
+          removed: removeReportForTestFile
 
 resetReports = ->
 	Meteor.call 'velocity/reports/reset', framework: TEST_FRAMEWORK_NAME
@@ -49,7 +61,7 @@ runTestFile = (file) ->
 	log "Run tests for file #{file.absolutePath}..."
 
 	reportFile = getReportFilePath file
-	child = spawn 'casperjs', ['test', "--xunit=#{reportFile}", file.absolutePath]
+	child = spawn 'casperjs', ['test', "--rootUrl=#{currentMirror.rootUrl}", "--xunit=#{reportFile}", file.absolutePath]
 	# child.stdout.on 'data', (msg) -> process.stdout.write msg
 	# child.stderr.on 'data', (msg) -> process.stderr.write msg
 	child.on 'exit', (code) ->
