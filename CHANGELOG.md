@@ -4,6 +4,9 @@
 
 ## Change log
 
+### 0.1.7
+ - MIT license added
+
 ### 0.1.6
  - Fixed: Compatibility with the latest velocity API
 
