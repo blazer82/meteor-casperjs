@@ -14,11 +14,10 @@ Npm.depends({
 Package.onUse(function(api) {
    api.versionsFrom('METEOR@1.0');
    api.use([
-      'velocity:core@0.4.1',
+      'velocity:core@0.6.1',
       'velocity:shim@0.0.3',
       'coffeescript'
    ], 'server');
-   api.use("velocity:node-soft-mirror@0.2.6", { unordered: true });
    api.addFiles('nblazer:casperjs.coffee', 'server');
    api.addFiles('sample-tests/sampleTest.coffee', 'server', {isAsset: true});
 });
